@@ -11,17 +11,6 @@ Este projeto implementa um sistema gráfico para calcular e exibir funções do 
 - **Cálculo do Zero da Função**: Calcula o valor de `x` onde `f(x) = 0`.
 - **Exibição do Gráfico**: Desenha o gráfico da função do 1º grau com eixos cartesianos.
 
-## Organização do Código
-
-### Model
-- **FunctionModel.java**: Representa o modelo de dados para a função, contendo os valores de `a` e `b` e métodos para calcular o zero da função.
-
-### View
-- **InputView.java**: Interface gráfica para inserção dos valores de `a` e `b`.
-- **GraphView.java**: Interface gráfica para exibir o gráfico da função.
-
-### Controller
-- **FunctionController.java**: Controlador que gerencia a interação entre a interface gráfica e o modelo de dados, incluindo a validação dos dados e a lógica de cálculo.
 
 ## Como Executar
 
