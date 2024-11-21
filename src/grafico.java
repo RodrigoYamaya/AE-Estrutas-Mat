@@ -8,25 +8,12 @@ import java.awt.event.KeyEvent;
 
 public class grafico extends JPanel {
     private float a, b;
-    private boolean errorFlag = false;
     private JFrame jFrame;
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             grafico funcao = new grafico();
             funcao.createInputScreen();
-        });
-    }
-
-    public grafico() {
-        setFocusable(true);
-        addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == 'n' || e.getKeyChar() == 'N') {
-                    reset();
-                }
-            }
         });
     }
 
@@ -40,17 +27,18 @@ public class grafico extends JPanel {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.setColor(new Color(245, 245, 245));
-                g.fillRoundRect(0, 0, getWidth(), getHeight(), 30, 30);
+                Graphics2D g2d = (Graphics2D) g;
+                GradientPaint gradient = new GradientPaint(0, 0, new Color(173, 216, 230), getWidth(), getHeight(), new Color(240, 248, 255));
+                g2d.setPaint(gradient);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
             }
         };
         mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
         mainPanel.setLayout(new BorderLayout(10, 10));
-        mainPanel.setPreferredSize(new Dimension(400, 300));
 
         JLabel titleLabel = new JLabel("Digite os valores para a função do 1º grau: f(x) = ax + b", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        titleLabel.setForeground(new Color(0, 51, 102));
+        titleLabel.setForeground(new Color(25, 25, 112));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         JPanel inputPanel = new JPanel();
@@ -89,25 +77,8 @@ public class grafico extends JPanel {
         JPanel buttonPanel = new JPanel();
         buttonPanel.setOpaque(false);
 
-        JButton calculateButton = new JButton("Calcular e Gerar Resultado");
-        calculateButton.setFont(new Font("Arial", Font.BOLD, 13));
-        calculateButton.setBackground(new Color(0, 128, 255));
-        calculateButton.setForeground(Color.WHITE);
-        calculateButton.setFocusPainted(false);
-        calculateButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0, 102, 204), 1),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
-        ));
-
-        JButton cancelButton = new JButton("Cancelar");
-        cancelButton.setFont(new Font("Arial", Font.BOLD, 13));
-        cancelButton.setBackground(new Color(220, 53, 69));
-        cancelButton.setForeground(Color.WHITE);
-        cancelButton.setFocusPainted(false);
-        cancelButton.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(169, 34, 53), 1),
-                BorderFactory.createEmptyBorder(10, 20, 10, 20)
-        ));
+        JButton calculateButton = createStyledButton("Calcular", new Color(56, 63, 142), new Color(56, 63, 142));
+        JButton cancelButton = createStyledButton("Cancelar", new Color(48, 169, 34), new Color(48, 169, 34));
 
         buttonPanel.add(calculateButton);
         buttonPanel.add(cancelButton);
@@ -129,21 +100,32 @@ public class grafico extends JPanel {
                         return;
                     }
 
-                    float x = -b / a;
-                    String message = String.format("O valor de x para f(x) = 0 é: %.2f", x);
+                    Object[] options = {"f(x) para x específico", "Raiz da função", "Gráfico da função"};
+                    int choice = JOptionPane.showOptionDialog(inputFrame,
+                            "Escolha uma das opções:",
+                            "Opção de Cálculo",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[0]);
 
-                    Object[] options = {"Sim", "Não"};
-                    int option = JOptionPane.showOptionDialog(inputFrame, message + "\nDeseja ver o gráfico da função?",
-                            "Resultado", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
-
-                    if (option == JOptionPane.YES_OPTION) {
+                    if (choice == 0) {
+                        String inputX = JOptionPane.showInputDialog(inputFrame, "Digite o valor de x:");
+                        if (inputX != null) {
+                            float x = Float.parseFloat(inputX);
+                            float fx = a * x + b;
+                            JOptionPane.showMessageDialog(inputFrame, String.format("O valor de f(%.2f) é: %.2f", x, fx), "Resultado", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                    } else if (choice == 1) {
+                        float raiz = -b / a;
+                        JOptionPane.showMessageDialog(inputFrame, String.format("O valor de x para f(x) = 0 é: %.2f", raiz), "Resultado", JOptionPane.INFORMATION_MESSAGE);
+                    } else if (choice == 2) {
                         inputFrame.dispose();
                         Screen();
-                    } else {
-                        System.exit(0);
                     }
                 } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(inputFrame, "Por favor, Insira valores numéricos válidos para A e B.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(inputFrame, "Por favor, insira valores numéricos válidos para A e B.", "Erro de Entrada", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -156,22 +138,52 @@ public class grafico extends JPanel {
         });
     }
 
+    private JButton createStyledButton(String text, Color bgColor, Color borderColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Arial", Font.BOLD, 13));
+        button.setBackground(bgColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(borderColor, 1),
+                BorderFactory.createEmptyBorder(10, 20, 10, 20)
+        ));
+        button.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor.darker());
+            }
+
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                button.setBackground(bgColor);
+            }
+        });
+        return button;
+    }
+
     private void Screen() {
-        jFrame = new JFrame("Projeto Cálculo da Função do 1º Grau");
+        jFrame = new JFrame("Gráfico da Função do 1º Grau");
         jFrame.add(this);
         jFrame.setSize(800, 600);
         jFrame.setLocationRelativeTo(null);
         jFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         jFrame.setVisible(true);
+
+        jFrame.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyChar() == 'n' || e.getKeyChar() == 'N') {
+                    jFrame.dispose();
+                    createInputScreen();
+                }
+            }
+        });
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (errorFlag) {
-            errorFlag = false;
-            return;
-        }
 
         drawAxes(g);
         drawFunction(g);
@@ -190,7 +202,7 @@ public class grafico extends JPanel {
         g.setColor(Color.BLACK);
         int scale = 30;
 
-        for (int i = -10; i <= 10; i++) {
+        for (int i = -22; i <= 22; i++) {
             int x = centerX + (i * scale);
             int y = centerY - (i * scale);
 
@@ -227,10 +239,5 @@ public class grafico extends JPanel {
         int coord2 = Math.round((-y2 * scale) + centerY);
 
         g2.drawLine(x1, coord1, x2, coord2);
-    }
-
-    private void reset() {
-        jFrame.dispose();
-        createInputScreen();
     }
 }
